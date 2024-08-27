@@ -1,0 +1,26 @@
+pipeline {
+    agent any
+    environment {
+        GIT_CREDENTIALS = credentials('your-credentials-id')
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/your-repo/my_cookbook.git', credentialsId: 'your-credentials-id'
+            }
+        }
+        stage('Install Dependencies') {
+            steps {
+                sh 'sudo apt-get update'
+                sh 'sudo apt-get install -y chef'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                script {
+                    sh 'knife ssh "name:*" "sudo chef-client" --ssh-user deploy-user --identity-file ~/.ssh/deploy.pem'
+                }
+            }
+        }
+    }
+}
