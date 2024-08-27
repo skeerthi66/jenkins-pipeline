@@ -1,0 +1,39 @@
+pipeline {
+    agent any
+    
+    environment {
+        // Define environment variables
+        PROFILE_PATH = '/path/to/my_profile'
+    }
+
+    stages {
+        stage('Execute Chef and InSpec') {
+            steps {
+                script {
+                    // Ensure Ruby is installed on the Jenkins node
+                    sh 'ruby -v'
+
+                    // Install InSpec gem if not installed
+                    sh 'gem install inspec'
+
+                    // Execute InSpec profile
+                    def command = "inspec exec ${PROFILE_PATH}"
+                    def result = sh(script: command, returnStatus: true)
+                    
+                    if (result == 0) {
+                        echo "Compliance Passed"
+                    } else {
+                        echo "Compliance Failed"
+                        currentBuild.result = 'FAILURE'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Compliance check completed."
+        }
+    }
+}
