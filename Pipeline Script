@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://your-repo-url.git'
+                git 'https://github.com/skeerthi66/keerthi.git'
             }
         }
         stage('Run Chef InSpec') {
