@@ -1,0 +1,42 @@
+{
+  "revision_id": "5c9528687b7bd7ade9dfcd84d179ad6d7b33a451a8e5a7e0c2c9aba1a4c38fcf",
+  "name": "webserver",
+  "run_list": [
+    "recipe[my_cookbook::default]"
+  ],
+  "included_policy_locks": [
+
+  ],
+  "cookbook_locks": {
+    "my_cookbook": {
+      "version": "0.1.0",
+      "identifier": "c90804fd9eba47b7799882f62ca45831bc17ae49",
+      "dotted_decimal_identifier": "56585287846771271.51643616677211300.96970632310345",
+      "source": "../my_cookbook",
+      "cache_key": null,
+      "scm_info": null,
+      "source_options": {
+        "path": "../my_cookbook"
+      }
+    }
+  },
+  "default_attributes": {
+
+  },
+  "override_attributes": {
+
+  },
+  "solution_dependencies": {
+    "Policyfile": [
+      [
+        "my_cookbook",
+        ">= 0.0.0"
+      ]
+    ],
+    "dependencies": {
+      "my_cookbook (0.1.0)": [
+
+      ]
+    }
+  }
+}
