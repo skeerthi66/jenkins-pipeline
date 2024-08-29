@@ -9,7 +9,10 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 echo 'Checking out code..'
-                checkout scm
+                checkout scmGit(
+                    branches: [[name: 'main']],
+                    userRemoteConfigs: [[url: 'https://github.com/skeerthi66/jenkins-pipeline.git']]
+                )
             }
         }
 
@@ -20,13 +23,43 @@ pipeline {
             }
         }
 
-        // Other stages...
+        stage('Deployable Bundle Creation') {
+            steps {
+                echo 'Creating Deploy Bundle...'
+                sh 'chef install Policyfile.rb'
+                sh 'cat Policyfile.lock.json'
+            }
+        }
+
+        stage('Compliance Check') {
+            steps {
+                echo 'Performing compliance check...'
+                sh 'inspec exec controls/ --format json --out inspec-results.json'
+                junit '**/inspec-results.json'
+            }
+        }
+
+        stage('Deploy Approval') {
+            steps {
+                timeout(time: 15, unit: "MINUTES") {
+                    input message: 'Do you want to approve the deployment?', ok: 'Yes'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploying....'
+                sh 'chef push prod Policyfile.lock.json'
+                sh 'knife ssh "name:web_server" "sudo chef-client" -a cloud.public_ipv4 -x ubuntu'
+            }
+        }
     }
 
     post {
         always {
             echo 'Build finished!'
-            mail to: 'you@example.com',
+            mail to: 'saikm@progress.com',
                  subject: "Build ${currentBuild.fullDisplayName}",
                  body: "Build ${currentBuild.fullDisplayName} finished with status: ${currentBuild.currentResult}"
         }
