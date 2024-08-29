@@ -1,0 +1,19 @@
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/skeerthi66/keerthi.git'
+            }
+        }
+        stage('Run Chef InSpec') {
+            steps {
+                script {
+                    def profilePath = '/path/to/inspec_profile'
+                    def result = sh(script: "inspec exec ${profilePath}", returnStdout: true)
+                    echo result
+                }
+            }
+        }
+    }
+}
