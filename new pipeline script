@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        PATH = "${PATH}:/path/to/your/gems/bin"  // Add the path to your Ruby gems if needed
+        PATH = "${PATH}:/opt/chef-workstation/embedded/bin"
     }
 
     stages {
@@ -16,37 +16,11 @@ pipeline {
         stage('Unit Test') {
             steps {
                 echo 'Performing unit tests..'
-                sh 'kitchen test'  // Ensure that 'kitchen' is in the PATH or provide the full path
+                sh 'kitchen test'
             }
         }
 
-        stage('Deployable Bundle Creation') {
-            steps {
-                echo 'Creating deployable bundle..'
-                // Add commands here
-            }
-        }
-
-        stage('Compliance Check') {
-            steps {
-                echo 'Running compliance checks..'
-                // Add commands here
-            }
-        }
-
-        stage('Deploy Approval') {
-            steps {
-                echo 'Awaiting deploy approval..'
-                // Add commands here
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo 'Deploying..'
-                // Add commands here
-            }
-        }
+        // Other stages...
     }
 
     post {
@@ -58,4 +32,3 @@ pipeline {
         }
     }
 }
-
