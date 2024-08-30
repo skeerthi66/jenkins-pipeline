@@ -5,7 +5,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Checkout your repository
-                git 'https://github.com/skeerthi66/jenkins-pipeline.git'
+                git branch: 'main', url: 'https://github.com/skeerthi66/jenkins-pipeline.git'
             }
         }
         stage('Install InSpec') {
