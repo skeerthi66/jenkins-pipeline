@@ -2,58 +2,25 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                echo 'Checking out code...'
-                checkout scm
+                // Checkout your repository
+                git 'https://github.com/skeerthi66/jenkins-pipeline.git'
             }
         }
-
-        stage('Unit Test') {
+        stage('Install InSpec') {
             steps {
-                echo 'Performing unit tests...'
-                sh 'kitchen test'
+                // Install InSpec if not already installed
+                sh 'curl https://omnitruck.chef.io/install.sh | sudo bash -s -- -P inspec'
             }
         }
-
-        stage('Deployable Bundle Creation') {
+        stage('Execute InSpec Profile') {
             steps {
-                echo 'Creating Deploy Bundle...'
-                sh 'chef install Policyfile.rb'
-                sh 'cat Policyfile.lock.json'
-            }
-        }
-
-        stage('Compliance Check') {
-            steps {
-                echo 'Running InSpec compliance checks...'
-                sh 'inspec exec compliance/my_profile'
-            }
-        }
-
-        stage('Deploy Approval') {
-            steps {
-                timeout(time: 15, unit: 'MINUTES') {
-                    input message: 'Do you want to approve the deployment?', ok: 'Yes'
+                // Navigate to the controls directory and execute the InSpec profile
+                dir('my_compliance_profile/controls') {
+                    sh '/opt/chef-workstation/embedded/bin/inspec exec .'
                 }
             }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo 'Deploying...'
-                sh 'chef push prod Policyfile.lock.json'
-                sh 'knife ssh "name:web_server" "sudo chef-client" -a cloud.public_ipv4 -x ubuntu'
-            }
-        }
-    }
-
-    post {
-        failure {
-            echo 'Build failed! Sending email notification...'
-            mail to: 'youremail@example.com',
-                 subject: "Build Failed: ${currentBuild.fullDisplayName}",
-                 body: "The Jenkins build failed. Please review the logs at ${env.BUILD_URL}."
         }
     }
 }
