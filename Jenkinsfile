@@ -11,7 +11,7 @@ pipeline {
         stage('Install InSpec') {
             steps {
                 script {
-                    // Path to InSpec executable
+                    // Path to your InSpec installation script
                     def inspecPath = '/opt/chef-workstation/embedded/bin/inspec'
 
                     // Check if InSpec is installed
