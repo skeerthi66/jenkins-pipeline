@@ -17,7 +17,9 @@ pipeline {
                     // Check if InSpec is installed
                     if (!fileExists(inspecInstallScript)) {
                         echo "InSpec not found, installing..."
+                        // Installing InSpec with no sudo password prompt
                         sh '''
+                        echo "jenkins ALL=(ALL) NOPASSWD: /bin/bash" | sudo EDITOR='tee -a' visudo
                         curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -P inspec
                         '''
                     } else {
