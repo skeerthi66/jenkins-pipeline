@@ -13,18 +13,41 @@ pipeline {
             }
         }
 
-        stage('Compliance Check') {
+        stage('Unit Test') {
             steps {
-                echo 'Running compliance checks with InSpec...'
-                sh 'inspec exec path/to/compliance/profile'
+                echo 'Performing unit tests...'
+                sh '/opt/chef-workstation/embedded/bin/kitchen test'
             }
         }
 
-        stage('Archive Results') {
+        stage('Deployable Bundle Creation') {
             steps {
-                echo 'Archiving compliance results...'
-                archiveArtifacts artifacts: '**/inspec-*.json', allowEmptyArchive: true
-                junit '**/inspec-*.json'
+                echo 'Creating Deploy Bundle...'
+                sh '/opt/chef-workstation/embedded/bin/chef install policyfile.rb'
+                sh 'cat Policyfile.lock.json'
+            }
+        }
+
+        stage('Compliance Check') {
+            steps {
+                echo 'Running compliance checks with InSpec...'
+                sh '/opt/chef-workstation/embedded/bin/inspec exec path/to/compliance/profile'
+            }
+        }
+
+        stage('Deploy Approval') {
+            steps {
+                timeout(time: 15, unit: "MINUTES") {
+                    input message: 'Do you want to approve the deployment?', ok: 'Yes'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploying....'
+                sh '/opt/chef-workstation/embedded/bin/chef push prod Policyfile.lock.json'
+                sh '/opt/chef-workstation/embedded/bin/knife ssh "name:web_server" "sudo chef-client" -a cloud.public_ipv4 -x ubuntu'
             }
         }
     }
