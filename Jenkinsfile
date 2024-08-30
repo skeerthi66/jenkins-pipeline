@@ -4,32 +4,27 @@ pipeline {
     stages {
         stage('Checkout SCM') {
             steps {
-                git 'https://github.com/skeerthi66/jenkins-pipeline.git'
+                // Checkout the repository containing the Jenkinsfile
+                checkout scm
             }
         }
 
         stage('Install InSpec') {
             steps {
                 script {
-                    // Check if InSpec is installed
+                    // Path to InSpec executable
                     def inspecPath = '/opt/chef-workstation/embedded/bin/inspec'
-                    if (!fileExists(inspecPath)) {
-                        echo 'InSpec not found, installing...'
-                        sh 'curl -L https://omnitruck.chef.io/install.sh | bash -s -- -P inspec'
-                    } else {
-                        echo 'InSpec found at ${inspecPath}'
-                    }
-                }
-            }
-        }
 
-        stage('Debug') {
-            steps {
-                script {
-                    // Print environment variables and paths for debugging
-                    sh 'echo $PATH'
-                    sh 'which inspec'
-                    sh 'ls -l /opt/chef-workstation/embedded/bin/inspec'
+                    // Verify if InSpec is installed
+                    if (fileExists(inspecPath)) {
+                        echo "InSpec found at ${inspecPath}"
+                    } else {
+                        echo "InSpec not found, installing..."
+                        // Install InSpec
+                        sh '''
+                        curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -P inspec
+                        '''
+                    }
                 }
             }
         }
@@ -37,13 +32,11 @@ pipeline {
         stage('Execute InSpec Profile') {
             steps {
                 script {
-                    // Define path to your InSpec profile
-                    def profilePath = '/home/saikeerthi/my_compliance_profile/controls'
-                    
-                    // Path to InSpec executable
-                    def inspecPath = '/opt/chef-workstation/embedded/bin/inspec'
-                    
+                    // Path to your InSpec profile
+                    def profilePath = "${workspace}/controls"
+
                     // Execute the InSpec profile
+                    def inspecPath = '/opt/chef-workstation/embedded/bin/inspec'
                     if (fileExists(inspecPath)) {
                         sh "${inspecPath} exec ${profilePath}"
                     } else {
@@ -55,14 +48,8 @@ pipeline {
 
         stage('Post Actions') {
             steps {
-                echo 'Pipeline completed.'
+                echo "Pipeline completed."
             }
-        }
-    }
-
-    post {
-        failure {
-            echo 'Pipeline failed.'
         }
     }
 }
