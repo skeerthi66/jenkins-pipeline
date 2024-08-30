@@ -4,14 +4,16 @@ pipeline {
     stages {
         stage('Checkout SCM') {
             steps {
-                checkout scm credentialsId: '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'
+                checkout([$class: 'GitSCM',
+                          userRemoteConfigs: [[url: 'https://github.com/skeerthi66/jenkins-pipeline', credentialsId: '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']]
+                         ])
             }
         }
 
         stage('Verify InSpec Version') {
             steps {
                 script {
-                    def inspecVersion = sh(script: 'inspec --version', returnStdout: true).trim()
+                    def inspecVersion = sh(script: '/opt/chef-workstation/embedded/bin/inspec --version', returnStdout: true).trim()
                     echo "Detected InSpec version: ${inspecVersion}"
 
                     // Add logic here to compare version and potentially install a specific version using package manager (if needed)
