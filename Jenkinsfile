@@ -2,23 +2,34 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
+        stage('Checkout SCM') {
             steps {
-                checkout scm
+                git 'https://github.com/skeerthi66/jenkins-pipeline.git'
             }
         }
 
         stage('Install InSpec') {
             steps {
                 script {
-                    // Install InSpec if it's not already installed
+                    // Check if InSpec is installed
                     def inspecPath = '/opt/chef-workstation/embedded/bin/inspec'
                     if (!fileExists(inspecPath)) {
                         echo 'InSpec not found, installing...'
-                        sh 'curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -P inspec'
+                        sh 'curl -L https://omnitruck.chef.io/install.sh | bash -s -- -P inspec'
                     } else {
-                        echo 'InSpec already installed.'
+                        echo 'InSpec found at ${inspecPath}'
                     }
+                }
+            }
+        }
+
+        stage('Debug') {
+            steps {
+                script {
+                    // Print environment variables and paths for debugging
+                    sh 'echo $PATH'
+                    sh 'which inspec'
+                    sh 'ls -l /opt/chef-workstation/embedded/bin/inspec'
                 }
             }
         }
@@ -26,15 +37,14 @@ pipeline {
         stage('Execute InSpec Profile') {
             steps {
                 script {
-                    // Path to your InSpec profile
-                    def profilePath = '/home/chefadmin/my_compliance_profile/controls'
-
-                    // Path to the InSpec executable
+                    // Define path to your InSpec profile
+                    def profilePath = '/home/saikeerthi/my_compliance_profile/controls'
+                    
+                    // Path to InSpec executable
                     def inspecPath = '/opt/chef-workstation/embedded/bin/inspec'
-
-                    // Check if the InSpec executable exists
+                    
+                    // Execute the InSpec profile
                     if (fileExists(inspecPath)) {
-                        echo 'Executing InSpec profile...'
                         sh "${inspecPath} exec ${profilePath}"
                     } else {
                         error "InSpec executable not found at ${inspecPath}"
@@ -42,12 +52,15 @@ pipeline {
                 }
             }
         }
+
+        stage('Post Actions') {
+            steps {
+                echo 'Pipeline completed.'
+            }
+        }
     }
 
     post {
-        always {
-            echo 'Pipeline completed.'
-        }
         failure {
             echo 'Pipeline failed.'
         }
