@@ -8,50 +8,23 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                echo 'Checking out code..'
-                checkout scmGit(
-                    branches: [[name: 'main']],
-                    userRemoteConfigs: [[url: 'https://github.com/skeerthi66/jenkins-pipeline.git']]
-                )
-            }
-        }
-
-        stage('Unit Test') {
-            steps {
-                echo 'Performing unit tests..'
-                sh 'kitchen test'
-            }
-        }
-
-        stage('Deployable Bundle Creation') {
-            steps {
-                echo 'Creating Deploy Bundle...'
-                sh 'chef install Policyfile.rb'
-                sh 'cat Policyfile.lock.json'
+                echo 'Checking out code...'
+                checkout scm
             }
         }
 
         stage('Compliance Check') {
             steps {
-                echo 'Performing compliance check...'
-                sh 'inspec exec controls/ --format json --out inspec-results.json'
-                junit '**/inspec-results.json'
+                echo 'Running compliance checks with InSpec...'
+                sh 'inspec exec path/to/compliance/profile'
             }
         }
 
-        stage('Deploy Approval') {
+        stage('Archive Results') {
             steps {
-                timeout(time: 15, unit: "MINUTES") {
-                    input message: 'Do you want to approve the deployment?', ok: 'Yes'
-                }
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo 'Deploying....'
-                sh 'chef push prod Policyfile.lock.json'
-                sh 'knife ssh "name:web_server" "sudo chef-client" -a cloud.public_ipv4 -x ubuntu'
+                echo 'Archiving compliance results...'
+                archiveArtifacts artifacts: '**/inspec-*.json', allowEmptyArchive: true
+                junit '**/inspec-*.json'
             }
         }
     }
