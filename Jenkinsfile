@@ -4,7 +4,6 @@ pipeline {
     stages {
         stage('Checkout SCM') {
             steps {
-                // Checkout the repository containing the Jenkinsfile
                 checkout scm
             }
         }
@@ -12,18 +11,17 @@ pipeline {
         stage('Install InSpec') {
             steps {
                 script {
-                    // Path to InSpec executable
-                    def inspecPath = '/opt/chef-workstation/embedded/bin/inspec'
+                    // Path to your InSpec installation script
+                    def inspecInstallScript = '/opt/chef-workstation/embedded/bin/inspec'
 
-                    // Verify if InSpec is installed
-                    if (fileExists(inspecPath)) {
-                        echo "InSpec found at ${inspecPath}"
-                    } else {
+                    // Check if InSpec is installed
+                    if (!fileExists(inspecInstallScript)) {
                         echo "InSpec not found, installing..."
-                        // Install InSpec
                         sh '''
                         curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -P inspec
                         '''
+                    } else {
+                        echo "InSpec already installed."
                     }
                 }
             }
@@ -33,10 +31,12 @@ pipeline {
             steps {
                 script {
                     // Path to your InSpec profile
-                    def profilePath = "${workspace}/controls"
+                    def profilePath = 'controls'
+
+                    // Path to InSpec executable
+                    def inspecPath = '/opt/chef-workstation/embedded/bin/inspec'
 
                     // Execute the InSpec profile
-                    def inspecPath = '/opt/chef-workstation/embedded/bin/inspec'
                     if (fileExists(inspecPath)) {
                         sh "${inspecPath} exec ${profilePath}"
                     } else {
@@ -45,5 +45,5 @@ pipeline {
                 }
             }
         }
-
-   
+    }
+}
