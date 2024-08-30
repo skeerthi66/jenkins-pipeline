@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Checkout SCM') {
             steps {
-                checkout scm credentialsId: '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' // Replace with your credential ID
+                checkout scm credentialsId: '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'
             }
         }
 
