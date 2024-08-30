@@ -11,15 +11,16 @@ pipeline {
         stage('Install InSpec') {
             steps {
                 script {
-                    // Path to your InSpec installation script
-                    def inspecInstallScript = '/opt/chef-workstation/embedded/bin/inspec'
+                    // Path to InSpec executable
+                    def inspecPath = '/opt/chef-workstation/embedded/bin/inspec'
 
                     // Check if InSpec is installed
-                    if (!fileExists(inspecInstallScript)) {
+                    def inspecInstalled = sh(script: "command -v ${inspecPath}", returnStatus: true) == 0
+
+                    if (!inspecInstalled) {
                         echo "InSpec not found, installing..."
-                        // Installing InSpec with no sudo password prompt
+                        // Installing InSpec
                         sh '''
-                        echo "jenkins ALL=(ALL) NOPASSWD: /bin/bash" | sudo EDITOR='tee -a' visudo
                         curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -P inspec
                         '''
                     } else {
@@ -39,8 +40,9 @@ pipeline {
                     def inspecPath = '/opt/chef-workstation/embedded/bin/inspec'
 
                     // Execute the InSpec profile
-                    if (fileExists(inspecPath)) {
-                        sh "${inspecPath} exec ${profilePath}"
+                    def inspecExecutable = sh(script: "command -v ${inspecPath}", returnStdout: true).trim()
+                    if (inspecExecutable) {
+                        sh "${inspecPath} exec ${profilePath} --chef-license=accept"
                     } else {
                         error "InSpec executable not found at ${inspecPath}"
                     }
@@ -48,4 +50,6 @@ pipeline {
             }
         }
     }
+}
+
 }
