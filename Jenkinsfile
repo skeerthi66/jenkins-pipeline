@@ -4,7 +4,18 @@ pipeline {
     stages {
         stage('Checkout SCM') {
             steps {
-                checkout scm
+                checkout scm credentialsId: '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' // Replace with your credential ID
+            }
+        }
+
+        stage('Verify InSpec Version') {
+            steps {
+                script {
+                    def inspecVersion = sh(script: 'inspec --version', returnStdout: true).trim()
+                    echo "Detected InSpec version: ${inspecVersion}"
+
+                    // Add logic here to compare version and potentially install a specific version using package manager (if needed)
+                }
             }
         }
 
