@@ -23,15 +23,8 @@ pipeline {
         stage('Deployable Bundle Creation') {
             steps {
                 echo 'Creating Deploy Bundle...'
-                sh 'chef install Policyfile.rb'
+                sh '/opt/chef-workstation/embedded/bin/chef install Policyfile.rb'
                 sh 'cat Policyfile.lock.json'
-            }
-        }
-
-        stage('Compliance Check') {
-            steps {
-                echo 'Running compliance checks with InSpec...'
-                sh '/opt/chef-workstation/embedded/bin/inspec exec /home/chefadmin/my_compliance_profile'
             }
         }
 
@@ -45,9 +38,24 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                echo 'Deploying...'
-                sh 'chef push prod Policyfile.lock.json'
-                sh 'knife ssh "name:web_server" "sudo chef-client" -a cloud.public_ipv4 -x ubuntu'
+                echo 'Deploying....'
+                sh '/opt/chef-workstation/embedded/bin/chef push prod Policyfile.lock.json'
+                sh '/opt/chef-workstation/embedded/bin/knife ssh "name:web_server" "sudo chef-client" -a cloud.public_ipv4 -x ubuntu'
+            }
+        }
+
+        stage('Compliance Check') {
+            steps {
+                echo 'Running compliance checks with InSpec...'
+                sh '/opt/chef-workstation/embedded/bin/inspec exec /full/path/to/my_compliance_profile'
+            }
+        }
+
+        stage('Archive Results') {
+            steps {
+                echo 'Archiving compliance results...'
+                archiveArtifacts artifacts: '**/inspec-*.json', allowEmptyArchive: true
+                junit '**/inspec-*.json'
             }
         }
     }
@@ -55,7 +63,7 @@ pipeline {
     post {
         always {
             echo 'Build finished!'
-            mail to: 'saikm@progress.com',
+            mail to: 'saikeerthi@gmail.com',
                  subject: "Build ${currentBuild.fullDisplayName}",
                  body: "Build ${currentBuild.fullDisplayName} finished with status: ${currentBuild.currentResult}"
         }
