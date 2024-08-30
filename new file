@@ -1,0 +1,33 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout your code from the repository
+                git 'https://github.com/skeerthi66/jenkins-pipeline.git'
+            }
+        }
+
+        stage('Install InSpec') {
+            steps {
+                // Install InSpec if not already installed
+                sh 'curl https://omnitruck.chef.io/install.sh | sudo bash -s -- -P inspec'
+            }
+        }
+
+        stage('Run InSpec Tests') {
+            steps {
+                // Execute InSpec tests
+                sh '/opt/chef-workstation/embedded/bin/inspec exec .'
+            }
+        }
+    }
+
+    post {
+        always {
+            // Archive test results
+            archiveArtifacts artifacts: 'path/to/results/*', allowEmptyArchive: true
+        }
+    }
+}
