@@ -8,16 +8,17 @@ pipeline {
             }
         }
 
-        stage('Install InSpec') {
+        stage('Verify InSpec Installation') {
             steps {
                 script {
-                    // Install InSpec if it's not already installed
+                    // Path to the InSpec executable
                     def inspecPath = '/opt/chef-workstation/embedded/bin/inspec'
-                    if (!fileExists(inspecPath)) {
-                        echo 'InSpec not found, installing...'
-                        sh 'curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -P inspec'
+
+                    // Check if the InSpec executable exists
+                    if (fileExists(inspecPath)) {
+                        echo 'InSpec found.'
                     } else {
-                        echo 'InSpec already installed.'
+                        error "InSpec executable not found at ${inspecPath}"
                     }
                 }
             }
