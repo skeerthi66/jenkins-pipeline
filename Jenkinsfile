@@ -4,29 +4,41 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Checkout the code from the repository
-                git url: 'https://github.com/skeerthi66/jenkins-pipeline.git', branch: 'main'
+                // Checkout the code from Git
+                checkout scm
             }
         }
+
         stage('Install InSpec') {
             steps {
                 script {
-                    // Check if InSpec is installed, if not, install it
+                    // Check if InSpec is installed, otherwise install it
                     def inspecPath = '/opt/chef-workstation/embedded/bin/inspec'
                     if (!fileExists(inspecPath)) {
                         echo 'InSpec not found, installing...'
-                        sh 'curl -L https://omnitruck.chef.io/install.sh | bash -s -- -P inspec'
+                        sh '''
+                        curl -L https://omnitruck.chef.io/install.sh | bash -s -- -P inspec
+                        '''
                     } else {
-                        echo 'InSpec is already installed.'
+                        echo 'InSpec already installed.'
                     }
                 }
             }
         }
+
         stage('Execute InSpec Profile') {
             steps {
                 script {
-                    // Run the InSpec profile
-                    sh '/opt/chef-workstation/embedded/bin/inspec exec /path/to/your/profile'
+                    // Path to your InSpec profile
+                    def profilePath = '/path/to/your/profile'
+
+                    // Execute the InSpec profile
+                    def inspecPath = '/opt/chef-workstation/embedded/bin/inspec'
+                    if (fileExists(inspecPath)) {
+                        sh "${inspecPath} exec ${profilePath}"
+                    } else {
+                        error "InSpec executable not found at ${inspecPath}"
+                    }
                 }
             }
         }
@@ -34,15 +46,9 @@ pipeline {
 
     post {
         always {
-            // Clean up actions or notifications
             echo 'Pipeline completed.'
         }
-        success {
-            // Actions on successful execution
-            echo 'Pipeline succeeded!'
-        }
         failure {
-            // Actions on failure
             echo 'Pipeline failed.'
         }
     }
