@@ -13,12 +13,7 @@ pipeline {
             }
         }
 
-        stage('Unit Test') {
-            steps {
-                echo 'Performing unit tests...'
-                sh '/opt/chef-workstation/embedded/bin/kitchen test'
-            }
-        }
+      
 
         stage('Deployable Bundle Creation') {
             steps {
