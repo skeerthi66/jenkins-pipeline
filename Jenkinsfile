@@ -4,7 +4,6 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Checkout the code from Git
                 checkout scm
             }
         }
@@ -12,13 +11,11 @@ pipeline {
         stage('Install InSpec') {
             steps {
                 script {
-                    // Check if InSpec is installed, otherwise install it
+                    // Install InSpec if it's not already installed
                     def inspecPath = '/opt/chef-workstation/embedded/bin/inspec'
                     if (!fileExists(inspecPath)) {
                         echo 'InSpec not found, installing...'
-                        sh '''
-                        curl -L https://omnitruck.chef.io/install.sh | bash -s -- -P inspec
-                        '''
+                        sh 'curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -P inspec'
                     } else {
                         echo 'InSpec already installed.'
                     }
@@ -30,11 +27,14 @@ pipeline {
             steps {
                 script {
                     // Path to your InSpec profile
-                    def profilePath = '/path/to/your/profile'
+                    def profilePath = '/home/chefadmin/my_compliance_profile/controls'
 
-                    // Execute the InSpec profile
+                    // Path to the InSpec executable
                     def inspecPath = '/opt/chef-workstation/embedded/bin/inspec'
+
+                    // Check if the InSpec executable exists
                     if (fileExists(inspecPath)) {
+                        echo 'Executing InSpec profile...'
                         sh "${inspecPath} exec ${profilePath}"
                     } else {
                         error "InSpec executable not found at ${inspecPath}"
