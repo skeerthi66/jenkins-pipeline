@@ -15,9 +15,10 @@ pipeline {
                     def inspecPath = '/opt/chef-workstation/embedded/bin/inspec'
 
                     echo "Checking if InSpec is installed at ${inspecPath}..."
+                    echo "Environment: ${sh(script: 'env', returnStdout: true)}"
 
                     // Check if the InSpec executable exists
-                    def inspecExecutable = sh(script: "command -v ${inspecPath}", returnStdout: true).trim()
+                    def inspecExecutable = sh(script: "which ${inspecPath}", returnStdout: true).trim()
 
                     if (inspecExecutable) {
                         echo "InSpec found at ${inspecExecutable}"
@@ -35,4 +36,3 @@ pipeline {
         }
     }
 }
-
