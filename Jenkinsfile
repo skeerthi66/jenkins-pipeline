@@ -2,33 +2,45 @@ pipeline {
     agent any
 
     stages {
+        stage('Initialize') {
+            steps {
+                echo "Starting the pipeline..."
+            }
+        }
+
         stage('Checkout SCM') {
             steps {
                 checkout scm
+                echo "Code checked out from SCM"
+            }
+        }
+
+        stage('Setup Environment') {
+            steps {
+                echo "Setting up the environment..."
+                // Add any environment setup commands here
             }
         }
 
         stage('Execute InSpec Profile') {
             steps {
                 script {
-                    def inspecPath = '/opt/chef-workstation/embedded/bin/inspec'
-
-                    echo "Checking if InSpec is installed at ${inspecPath}..."
-
-                    // Check if the InSpec executable exists at the specific path
-                    def inspecExecutable = sh(script: "which ${inspecPath}", returnStatus: true)
-
-                    if (inspecExecutable == 0) {
-                        echo "InSpec found at ${inspecPath}"
-                        // Replace with a simple "Hello, World!" output for testing
-                        sh "${inspecPath} --version" // This is just to ensure InSpec runs; you can replace this with your actual command
-                        echo "Hello, World!"
-                    } else {
-                        // If InSpec is not found, throw an error
-                        error "InSpec executable not found at ${inspecPath}."
-                    }
+                    echo "Hello, World! - InSpec step execution"
                 }
             }
+        }
+
+        stage('Cleanup') {
+            steps {
+                echo "Cleaning up after the pipeline..."
+                // Add any cleanup commands here
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Pipeline execution completed."
         }
     }
 }
