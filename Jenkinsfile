@@ -26,6 +26,11 @@ pipeline {
             steps {
                 script {
                     echo "Hello, World! - InSpec step execution"
+                    
+                    // Set PATH to include the directory containing InSpec
+                  //  withEnv(["PATH+CHEF=/opt/chef-workstation/embedded/bin"]) {
+                     //   def inspecExecutable = sh(script: "which ${inspecPath}", returnStatus: true)
+
                 }
             }
         }
